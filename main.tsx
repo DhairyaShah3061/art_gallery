@@ -9,6 +9,7 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [asciiColor, setAsciiColor] = useState("white");
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const sceneRef = useRef<THREE.Scene | null>(null);
   const effectRef = useRef<AsciiEffect | null>(null);
@@ -51,30 +52,39 @@ function App() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
-    const loader = new STLLoader();
-    loader.load('/model.stl', (geometry) => {
-      geometry.computeVertexNormals();
-      geometry.center();
+    const loadModel = (url: string) => {
+      const loader = new STLLoader();
+      loader.load(url, (geometry) => {
+        geometry.computeVertexNormals();
+        geometry.center();
 
-      const box = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 1 / maxDim;
-      geometry.scale(scale, scale, scale);
-      geometry.computeBoundingBox();
+        const box = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 1 / maxDim;
+        geometry.scale(scale, scale, scale);
+        geometry.computeBoundingBox();
 
-      const material = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.rotation.x = -Math.PI / 2;
-      scene.add(mesh);
-      meshRef.current = mesh;
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.rotation.x = -Math.PI / 2;
+        scene.add(mesh);
+        meshRef.current = mesh;
 
-      camera.lookAt(0, 0, 0);
-      controls.update();
-    });
+        camera.lookAt(0, 0, 0);
+        controls.update();
+      });
+    };
+
+    if (uploadedFile) {
+      const fileURL = URL.createObjectURL(uploadedFile);
+      loadModel(fileURL);
+    } else {
+      loadModel('/model.stl');
+    }
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -96,7 +106,7 @@ function App() {
       window.removeEventListener('resize', handleResize);
       containerRef.current?.removeChild(effect.domElement);
     };
-  }, []);
+  }, [uploadedFile]);
 
   useEffect(() => {
     if (effectRef.current) {
@@ -128,6 +138,12 @@ function App() {
           >
             Toggle {isDarkMode ? 'Light' : 'Dark'} Mode
           </button>
+          <input
+            type="file"
+            accept=".stl"
+            onChange={(e) => setUploadedFile(e.target.files ? e.target.files[0] : null)}
+            className="btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+          />
         </div>
       </div>
       <div ref={containerRef} className="w-full h-screen" />
