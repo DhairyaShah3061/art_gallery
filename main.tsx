@@ -25,13 +25,14 @@ function App() {
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.35); // Slightly increased intensity
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2); // Increased intensity for better visibility
-    directionalLight.position.set(2, 2, 2).normalize();
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); // Increased intensity for better visibility
+    directionalLight.position.set(3, 5, 1).normalize();
     directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.set(2048, 2048);
     scene.add(directionalLight);
 
-    const spotLight = new THREE.SpotLight(0xffffff, 1);
-    spotLight.position.set(5, 5, 5);
+    const spotLight = new THREE.SpotLight(0xffffff, 1.2);
+    spotLight.position.set(-3, 6, 4);
     spotLight.castShadow = true;
     scene.add(spotLight);
 
