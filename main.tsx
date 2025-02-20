@@ -23,9 +23,9 @@ function App() {
     scene.background = new THREE.Color(0x000000);
     sceneRef.current = scene;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Reduced intensity
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Softened lighting
     directionalLight.position.set(2, 2, 2).normalize();
     directionalLight.castShadow = true;
     scene.add(directionalLight);
@@ -38,9 +38,9 @@ function App() {
     renderer.setClearColor(0x000000);
     renderer.shadowMap.enabled = true;
     
-    const effect = new AsciiEffect(renderer, ' .:-+*=%@#', {
+    const effect = new AsciiEffect(renderer, ' .:-=+*#%@', { // Adjusted character set for better contrast
       invert: true,
-      resolution: 0.3 // Increased resolution
+      resolution: 0.35 // Slightly reduced resolution for refinement
     });
     effect.setSize(window.innerWidth, window.innerHeight);
     effect.domElement.style.color = asciiColor;
