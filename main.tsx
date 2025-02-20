@@ -6,15 +6,15 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import { AsciiEffect } from 'three/examples/jsm/effects/AsciiEffect';
 
 function App() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef(null);
   const [asciiColor, setAsciiColor] = useState("white");
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
 
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const effectRef = useRef<AsciiEffect | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const meshRef = useRef<THREE.Mesh | null>(null);
+  const sceneRef = useRef(null);
+  const effectRef = useRef(null);
+  const cameraRef = useRef(null);
+  const meshRef = useRef(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -23,10 +23,10 @@ function App() {
     scene.background = new THREE.Color(0x000000);
     sceneRef.current = scene;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Adjusted for subtle shadows
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.25); // Reduced intensity
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9); // Enhanced shadows
-    directionalLight.position.set(2, 2, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Reduced intensity
+    directionalLight.position.set(2, 2, 2).normalize();
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
@@ -38,9 +38,9 @@ function App() {
     renderer.setClearColor(0x000000);
     renderer.shadowMap.enabled = true;
     
-    const effect = new AsciiEffect(renderer, ' .:-+*=%@#', { // Kept previous character set
+    const effect = new AsciiEffect(renderer, ' .:-+*=%@#', {
       invert: true,
-      resolution: 0.22 // Slightly reduced refinement for better texture
+      resolution: 0.3
     });
     effect.setSize(window.innerWidth, window.innerHeight);
     effect.domElement.style.color = asciiColor;
@@ -52,13 +52,21 @@ function App() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
-    const loadModel = (url: string) => {
+    const loadModel = (url) => {
       const loader = new STLLoader();
       loader.load(url, (geometry) => {
         geometry.computeVertexNormals();
         geometry.center();
 
-        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
+        const box = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 1 / maxDim;
+        geometry.scale(scale, scale, scale);
+        geometry.computeBoundingBox();
+
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, roughness: 0.6, metalness: 0.1 });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -100,6 +108,20 @@ function App() {
     };
   }, [uploadedFile]);
 
+  useEffect(() => {
+    if (effectRef.current) {
+      effectRef.current.domElement.style.color = asciiColor;
+    }
+  }, [asciiColor]);
+
+  useEffect(() => {
+    document.body.style.backgroundColor = isDarkMode ? 'black' : 'white';
+    document.body.style.color = isDarkMode ? 'white' : 'black';
+    if (effectRef.current) {
+      effectRef.current.domElement.style.color = isDarkMode ? 'white' : 'black';
+    }
+  }, [isDarkMode]);
+
   return (
     <div className="min-h-screen">
       <div className="fixed top-0 left-0 w-full p-4 bg-opacity-75 z-10 bg-gray-800 flex justify-between items-center">
@@ -129,7 +151,7 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>
