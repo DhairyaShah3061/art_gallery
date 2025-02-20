@@ -23,15 +23,20 @@ function App() {
     scene.background = new THREE.Color(0x000000);
     sceneRef.current = scene;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.25); // Reduced intensity
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.35); // Slightly increased intensity
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Reduced intensity
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2); // Increased intensity for better visibility
     directionalLight.position.set(2, 2, 2).normalize();
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
+    const spotLight = new THREE.SpotLight(0xffffff, 1);
+    spotLight.position.set(5, 5, 5);
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-    camera.position.set(2, 2, 2);
+    camera.position.set(3, 3, 3);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -66,7 +71,7 @@ function App() {
         geometry.scale(scale, scale, scale);
         geometry.computeBoundingBox();
 
-        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, roughness: 0.6, metalness: 0.1 });
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, roughness: 0.5, metalness: 0.2 });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
