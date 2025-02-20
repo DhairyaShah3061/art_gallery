@@ -23,10 +23,10 @@ function App() {
     scene.background = new THREE.Color(0x000000);
     sceneRef.current = scene;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Reduced intensity
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Slightly increased intensity
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Softened lighting
-    directionalLight.position.set(2, 2, 2).normalize();
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Stronger lighting
+    directionalLight.position.set(2, 2, 2);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
@@ -38,9 +38,9 @@ function App() {
     renderer.setClearColor(0x000000);
     renderer.shadowMap.enabled = true;
     
-    const effect = new AsciiEffect(renderer, ' .:-=+*#%@', { // Adjusted character set for better contrast
+    const effect = new AsciiEffect(renderer, ' .:-+*=%@#', { // Reverted character set
       invert: true,
-      resolution: 0.35 // Slightly reduced resolution for refinement
+      resolution: 0.25 // Slightly increased resolution for more crispness
     });
     effect.setSize(window.innerWidth, window.innerHeight);
     effect.domElement.style.color = asciiColor;
@@ -57,14 +57,6 @@ function App() {
       loader.load(url, (geometry) => {
         geometry.computeVertexNormals();
         geometry.center();
-
-        const box = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
-        const size = new THREE.Vector3();
-        box.getSize(size);
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 1 / maxDim;
-        geometry.scale(scale, scale, scale);
-        geometry.computeBoundingBox();
 
         const material = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true });
         const mesh = new THREE.Mesh(geometry, material);
@@ -107,20 +99,6 @@ function App() {
       containerRef.current?.removeChild(effect.domElement);
     };
   }, [uploadedFile]);
-
-  useEffect(() => {
-    if (effectRef.current) {
-      effectRef.current.domElement.style.color = asciiColor;
-    }
-  }, [asciiColor]);
-
-  useEffect(() => {
-    document.body.style.backgroundColor = isDarkMode ? 'black' : 'white';
-    document.body.style.color = isDarkMode ? 'white' : 'black';
-    if (effectRef.current) {
-      effectRef.current.domElement.style.color = isDarkMode ? 'white' : 'black';
-    }
-  }, [isDarkMode]);
 
   return (
     <div className="min-h-screen">
